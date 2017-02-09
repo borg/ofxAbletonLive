@@ -188,7 +188,7 @@ void ofxAbletonLive::update()
         ofxOscMessage m;
         receiver.getNextMessage(m);
         //displayOscMessage(m);
-        if      (m.getAddress() == "/live/device/param") {
+        if      (isLoaded() && m.getAddress() == "/live/device/param") {
             processParameterUpdate(m);
         }
         else if (m.getAddress() == "/live/name/clip") {
@@ -347,9 +347,11 @@ void ofxAbletonLive::checkIfTracksLoaded()
             if (!itd->second->getInitialized()) return;
         }
     }
+    if(masterTrack){
     map<int, ofxAbletonLiveDevice*>::iterator itd = masterTrack->getDevices().begin();
     for (; itd != masterTrack->getDevices().end(); ++itd) {
         if (!itd->second->getInitialized()) return;
+    }
     }
 
     if (!loaded) {
@@ -364,7 +366,9 @@ void ofxAbletonLive::processParameterUpdate(ofxOscMessage &m)
     int device = m.getArgAsInt32(1);
     int parameter = m.getArgAsInt32(2);
     if (parameter > 0 && tracks.count(track) != 0 && tracks[track]->getDevices().count(device)) {
-        tracks[track]->getDevices()[device]->getParameterGroup()->getFloat(parameter).set(m.getArgAsFloat(3));
+        if(tracks[track]){
+            tracks[track]->getDevices()[device]->getParameterGroup()->getFloat(parameter).set(m.getArgAsFloat(3));
+        }
     }
 }
 
@@ -500,6 +504,34 @@ void ofxAbletonLive::setQuantization(int quantization)
     msg.addIntArg(ofClamp(quantization, 0, 13));
     sender.sendMessage(msg);
 }
+
+
+/*
+/live/clip/signature    (int track, int clip)                           Gets the time signature of a clip returns 4 4 for example
+/live/clip/signature    (int track, int clip, int denom, int num)       Sets the time signature of a clip
+
+
+*/
+void ofxAbletonLive::getTimeSignature(int track, int clip){
+    ofxOscMessage msg;
+    msg.setAddress("/live/clip/signature");
+    msg.addIntArg(track);
+    msg.addIntArg(clip);
+    sender.sendMessage(msg);
+}
+void ofxAbletonLive::setTimeSignature(int track, int clip, int denom, int num){
+    ofxOscMessage msg;
+    msg.setAddress("/live/clip/signature");
+    msg.addIntArg(track);
+    msg.addIntArg(clip);
+    msg.addIntArg(denom);
+    msg.addIntArg(num);
+    sender.sendMessage(msg);
+
+}
+
+
+
 
 void ofxAbletonLive::displayOscMessage(ofxOscMessage &m)
 {

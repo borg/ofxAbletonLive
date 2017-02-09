@@ -48,6 +48,10 @@ public:
     void setCrossFader(float crossfade);
     void setQuantization(int quantization);
     
+    //borg
+    void getTimeSignature(int track, int clip);
+    void setTimeSignature(int track, int clip, int denom, int num);
+    
     ofParameter<float> & getTempo() {return tempo;}
     ofParameter<float> & getTime() {return time;}
     ofParameter<bool> & getOverdub() {return overdub;}
